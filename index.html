@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Responsive Calculator</title>
+<style>
+    body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background-color: #f0f0f0;
+    }
+
+    .calculator {
+        background-color: #444;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        width: 300px;
+        max-width: 100%;
+        text-align: right;
+    }
+
+    .display {
+        font-size: 2em;
+        color: white;
+        padding: 10px;
+        background-color: #333;
+        border-radius: 4px;
+        margin-bottom: 10px;
+    }
+
+    .keys {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        grid-gap: 10px;
+    }
+
+    button {
+        font-size: 1.5em;
+        padding: 10px;
+        border: none;
+        cursor: pointer;
+        background-color: #666;
+        color: white;
+        border-radius: 4px;
+    }
+
+    button.operator {
+        background-color: #008CBA; /* Blue color for operator buttons */
+    }
+
+    button:active {
+        background-color: #888;
+    }
+
+    .overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        visibility: visible; /* Initially visible */
+        opacity: 1; /* Initially opaque */
+        transition: opacity 0.3s ease;
+    }
+
+    .overlay-content {
+        text-align: center;
+        color: white;
+    }
+
+    .overlay button {
+        padding: 10px 20px;
+        font-size: 1em;
+        background-color: #009688;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .overlay button:hover {
+        background-color: #00796b;
+    }
+</style>
+</head>
+<body>
+<div class="calculator">
+    <div class="overlay" id="overlay">
+        <div class="overlay-content">
+            <h2>Welcome to Simple Calculator!</h2>
+            <p>Designed using HTML, CSS, and JavaScript.</p>
+            <button onclick="hideOverlay()">Start Calculating</button>
+        </div>
+    </div>
+    <div class="display" id="display">0</div>
+    <div class="keys">
+        <button onclick="appendNumber('7')">7</button>
+        <button onclick="appendNumber('8')">8</button>
+        <button onclick="appendNumber('9')">9</button>
+        <button class="operator" onclick="setOperator('+')">+</button>
+        <button onclick="appendNumber('4')">4</button>
+        <button onclick="appendNumber('5')">5</button>
+        <button onclick="appendNumber('6')">6</button>
+        <button class="operator" onclick="setOperator('-')">-</button>
+        <button onclick="appendNumber('1')">1</button>
+        <button onclick="appendNumber('2')">2</button>
+        <button onclick="appendNumber('3')">3</button>
+        <button class="operator" onclick="setOperator('*')">*</button>
+        <button onclick="appendNumber('0')">0</button>
+        <button onclick="appendDecimal('.')">.</button>
+        <button class="operator" onclick="setOperator('/')">/</button>
+        <button onclick="clearDisplay()">C</button>
+        <button class="operator" onclick="calculate()">=</button>
+        <button class="operator" onclick="cancelLast()">X</button>
+    </div>
+</div>
+
+<script>
+    let currentDisplay = '0';
+    let operator = null;
+    let firstOperand = null;
+    let waitingForSecondOperand = false;
+
+    const display = document.getElementById('display');
+    const overlay = document.getElementById('overlay');
+
+    function updateDisplay() {
+        display.textContent = currentDisplay;
+    }
+
+    function appendNumber(number) {
+        if (currentDisplay === '0' || waitingForSecondOperand) {
+            currentDisplay = number;
+            waitingForSecondOperand = false;
+        } else {
+            currentDisplay += number;
+        }
+        updateDisplay();
+    }
+
+    function appendDecimal() {
+        if (waitingForSecondOperand) return;
+        if (!currentDisplay.includes('.')) {
+            currentDisplay += '.';
+        }
+        updateDisplay();
+    }
+
+    function setOperator(op) {
+        if (operator !== null && !waitingForSecondOperand) {
+            calculate();
+        }
+        operator = op;
+        firstOperand = currentDisplay;
+        waitingForSecondOperand = true;
+        updateDisplay();
+    }
+
+    function calculate() {
+        if (operator === null || waitingForSecondOperand) return;
+
+        let result;
+        const secondOperand = currentDisplay;
+
+        switch (operator) {
+            case '+':
+                result = parseFloat(firstOperand) + parseFloat(secondOperand);
+                break;
+            case '-':
+                result = parseFloat(firstOperand) - parseFloat(secondOperand);
+                break;
+            case '*':
+                result = parseFloat(firstOperand) * parseFloat(secondOperand);
+                break;
+            case '/':
+                result = parseFloat(firstOperand) / parseFloat(secondOperand);
+                break;
+            default:
+                return;
+        }
+
+        currentDisplay = result.toString();
+        operator = null;
+        firstOperand = null;
+        waitingForSecondOperand = false;
+        updateDisplay();
+    }
+    function clearDisplay() {
+        currentDisplay = '0';
+        operator = null;
+        firstOperand = null;
+        waitingForSecondOperand = false;
+        updateDisplay();
+    }
+
+    function cancelLast() {
+        if (currentDisplay.length > 1) {
+            currentDisplay = currentDisplay.slice(0, -1);
+        } else {
+            currentDisplay = '0';
+        }
+        updateDisplay();
+    }
+
+    function showOverlay() {
+        overlay.style.visibility = 'visible';
+        overlay.style.opacity = '1';
+    }
+
+    function hideOverlay() {
+        overlay.style.visibility = 'hidden';
+        overlay.style.opacity = '0';
+    }
+
+    // Initially show the overlay
+    showOverlay();
+</script>
+</body>
+</html>
